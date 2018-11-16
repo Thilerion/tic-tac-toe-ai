@@ -114,9 +114,10 @@ class Game {
 		}
 		return this;
 	}
-}
 
-// let g = Game.create().doMove(0, "X").doMove(4, "O").doMove(1, "X").doMove(2, "O").doMove(6, "X").doMove(3, "O").doMove(5, "X").doMove(7, "X").doMove(8, "O");
-// g.printGrid();
+	isTie() {
+		return this.winner === TIE;
+	}
+}
 
 export { PLAYERS, TIE, WINNERS, Game };
