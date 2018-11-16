@@ -58,7 +58,7 @@ class Game {
 		return this;
 	}
 
-	printGrid() {
+	getGridString() {
 		let str = `+---+---+---+\n`;
 
 		for (let i = 0; i < this.grid.length; i += 3) {
@@ -72,7 +72,11 @@ class Game {
 		} else {
 			str = `Current player: ${this.currentPlayer.mark}\n${str}`;
 		}
-		console.log(str);
+		return str;
+	}
+
+	printGrid() {
+		console.log(this.getGridString());
 	}
 
 	doMove(index, mark) {
@@ -119,5 +123,8 @@ class Game {
 		return this.winner === TIE;
 	}
 }
+
+// let g = Game.empty().doMove(0, "X").doMove(1, "O");
+// let bestMove = getBestMove(g, 5);
 
 export { PLAYERS, TIE, WINNERS, Game };

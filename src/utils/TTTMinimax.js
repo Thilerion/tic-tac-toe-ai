@@ -20,17 +20,18 @@
 	-	Randomize choice if multiple moves have the best score
 */
 
-function getBestMove(game) {
+function getBestMove(game, maxDepth = 9) {
 
-	const { score, move } = minimax(game, true, 0, 9);
+	const { score, move } = minimax(game, true, 0, maxDepth);
 	console.log("Total best score and move found: ", { score, move });
+
 	return move;
 }
 
-function minimax(game, maximizing = true, currentDepth = 0, maxDepth = 9) {
+function minimax(game, maximizing = true, currentDepth = 0, maxDepth) {
 
-	if (game.evaluateWin().end === true) {
-		if (game.isTie()) return { score: 0 };
+	if (game.evaluateWin().end === true || currentDepth > maxDepth) {
+		if (game.isTie() || !game.end) return { score: 0 };
 		// if maximizing, return negative score because the last move was made by minimizing player
 		else if (maximizing) return { score: -20 + currentDepth };
 		else return {score: 20 - currentDepth};
@@ -48,13 +49,14 @@ function minimax(game, maximizing = true, currentDepth = 0, maxDepth = 9) {
 		game.doMove(possibleMoves[i], game.currentPlayer.mark);
 		
 		let move = possibleMoves[i];
+
 		let score = minimax(game, !maximizing, currentDepth + 1, maxDepth).score;
 		moves.push({ move, score });
 
 		game.undoMove();
 	}
 	
-	let bestMove;
+	let bestMoves = [];
 	let bestScore = maximizing ? -Infinity : Infinity;
 
 	for (let i = 0; i < moves.length; i++) {
@@ -62,15 +64,21 @@ function minimax(game, maximizing = true, currentDepth = 0, maxDepth = 9) {
 		if (!maximizing) {
 			if (evalMove.score < bestScore) {
 				bestScore = evalMove.score;
-				bestMove = evalMove.move;
+				bestMoves = [evalMove.move];
+			} else if (evalMove.score === bestScore) {
+				bestMoves.push(evalMove.move);
 			}
 		} else if (maximizing) {
 			if (evalMove.score > bestScore) {
 				bestScore = evalMove.score;
-				bestMove = evalMove.move;
+				bestMoves = [evalMove.move];
+			} else if (evalMove.score === bestScore) {
+				bestMoves.push(evalMove.move);
 			}
 		}
 	}
 
-	return { move: bestMove, score: bestScore };
+	let rndBestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+
+	return { move: rndBestMove, score: bestScore };
 }
