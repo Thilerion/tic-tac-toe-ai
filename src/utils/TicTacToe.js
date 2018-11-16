@@ -30,13 +30,27 @@ class Game {
 		this.winner = null;
 	}
 
-	static create() {
+	static empty() {
 		let grid = Array(9).fill(" ");
 		return new Game(grid);
 	}
 
-	static createImport(arr) {
-		return new Game(arr);
+	static import(arr) {
+		return new Game(arr).getCurrentPlayer().evaluateWin();
+	}
+
+	getCurrentPlayer() {
+		let moves = this.grid.reduce((acc, val) => {
+			if (val === "O" || val === "X") {
+				if (!acc[val]) acc[val] = 1;
+				else acc[val]++;
+			} 
+			return acc;
+		}, { O: 0, X: 0 });
+
+		if (moves.O >= moves.X) this.currentPlayer = PLAYERS.X;
+		else this.currentPlayer = PLAYERS.O;
+		return this;
 	}
 
 	toggleCurrentPlayer() {
@@ -68,6 +82,7 @@ class Game {
 	}
 
 	undoMove() {
+		if (this.history.length <= 0) return this;
 		let {index} = this.history.pop();
 		this.grid[index] = " ";
 		return this.toggleCurrentPlayer().evaluateWin();
@@ -101,5 +116,7 @@ class Game {
 	}
 }
 
-let g = Game.create().doMove(0, "X").doMove(4, "O").doMove(1, "X").doMove(2, "O").doMove(6, "X").doMove(3, "O").doMove(5, "X").doMove(7, "X").doMove(8, "O");
-g.printGrid();
+// let g = Game.create().doMove(0, "X").doMove(4, "O").doMove(1, "X").doMove(2, "O").doMove(6, "X").doMove(3, "O").doMove(5, "X").doMove(7, "X").doMove(8, "O");
+// g.printGrid();
+
+export { PLAYERS, TIE, WINNERS, Game };
