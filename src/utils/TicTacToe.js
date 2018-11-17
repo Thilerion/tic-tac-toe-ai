@@ -124,7 +124,7 @@ class Game {
 	}
 }
 
-// let g = Game.empty().doMove(0, "X").doMove(1, "O");
+// let g = Game.empty().doMove(1, "X").doMove(7, "O").doMove(8, "X").doMove(6, "O").doMove(5, "X").getCurrentPlayer();
 // let bestMove = getBestMove(g, 5);
 
 export { PLAYERS, TIE, WINNERS, Game };

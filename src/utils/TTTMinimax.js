@@ -22,63 +22,54 @@
 
 function getBestMove(game, maxDepth = 9) {
 
-	const { score, move } = minimax(game, true, 0, maxDepth);
+	const { score, move } = minimax(game, game.getCurrentPlayer().currentPlayer, 0, maxDepth);
 	console.log("Total best score and move found: ", { score, move });
 
 	return move;
 }
 
-function minimax(game, maximizing = true, currentDepth = 0, maxDepth) {
+function minimax(game, maxPlayer, depth, maxDepth) {
 
-	if (game.evaluateWin().end === true || currentDepth > maxDepth) {
+	if (game.evaluateWin().end === true || depth > maxDepth) {
 		if (game.isTie() || !game.end) return { score: 0 };
-		// if maximizing, return negative score because the last move was made by minimizing player
-		else if (maximizing) return { score: -20 + currentDepth };
-		else return {score: 20 - currentDepth};
+		
+		// Return score from maximizer's perspective
+		if (game.winner === maxPlayer.mark) {
+			return { score: 20 - depth };
+		} else return { score: depth - 20 };
 	}
 
 	let moves = [];
 
 	let possibleMoves = game.grid.reduce((acc, val, index) => {
-		if (val === " ") {
-			return [...acc, index];
-		} else return acc;
+		if (val !== "X" && val !== "O") acc.push(index);
+		return acc;
 	}, []);
 
+	let mark = game.getCurrentPlayer().currentPlayer.mark;
+
 	for (let i = 0; i < possibleMoves.length; i++) {
-		game.doMove(possibleMoves[i], game.currentPlayer.mark);
+
+		game.doMove(possibleMoves[i], mark);
 		
 		let move = possibleMoves[i];
 
-		let score = minimax(game, !maximizing, currentDepth + 1, maxDepth).score;
+		let score = minimax(game, maxPlayer, depth + 1, maxDepth).score;
 		moves.push({ move, score });
 
 		game.undoMove();
 	}
+
+	if (depth < 2) console.log(moves);
+
+	let getMaximumScore = game.getCurrentPlayer().currentPlayer === maxPlayer;
 	
-	let bestMoves = [];
-	let bestScore = maximizing ? -Infinity : Infinity;
-
-	for (let i = 0; i < moves.length; i++) {
-		let evalMove = moves[i];
-		if (!maximizing) {
-			if (evalMove.score < bestScore) {
-				bestScore = evalMove.score;
-				bestMoves = [evalMove.move];
-			} else if (evalMove.score === bestScore) {
-				bestMoves.push(evalMove.move);
-			}
-		} else if (maximizing) {
-			if (evalMove.score > bestScore) {
-				bestScore = evalMove.score;
-				bestMoves = [evalMove.move];
-			} else if (evalMove.score === bestScore) {
-				bestMoves.push(evalMove.move);
-			}
+	return moves.reduce((bestScore, currentScore) => {
+		if (getMaximumScore) {
+			if (currentScore.score > bestScore.score) return currentScore;
+		} else {
+			if (currentScore.score < bestScore.score) return currentScore;
 		}
-	}
-
-	let rndBestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
-
-	return { move: rndBestMove, score: bestScore };
+		return bestScore;
+	}, { score: getMaximumScore ? -10000 : 10000 });
 }
