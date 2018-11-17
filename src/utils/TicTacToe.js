@@ -4,11 +4,13 @@ const PLAYER = "player"
 const PLAYERS = {
 	O: {
 		type: COMPUTER,
-		mark: "O"
+		mark: "O",
+		color: -1
 	},
 	X: {
 		type: PLAYER,
-		mark: "X"
+		mark: "X",
+		color: 1
 	}
 }
 
@@ -19,6 +21,56 @@ const WINNERS = [
 	[0, 3, 6], [1, 4, 7], [2, 5, 8],
 	[0, 4, 8], [2, 4, 6]
 ];
+
+function getBestMove(game, maxDepth = 9) {
+
+	console.log(game.getCurrentPlayer().currentPlayer.color);
+	const { score, move } = negamax(game, 0, maxDepth, game.getCurrentPlayer().currentPlayer.color);
+	console.log("Total best score and move found: ", { score, move });
+
+	return move;
+}
+
+function negamax(game, depth, maxDepth, color) {
+
+	if (game.evaluateWin().end === true || depth > maxDepth) {
+		// 
+		if (game.isTie() || !game.end) return { score: 0 };
+
+		// Return score from POV player with color of 1 ("X") * color of recursive step
+		let score = game.winner === "X" ? (20 - depth) : (depth - 20);
+		return { score: color * score };
+		// return { score: color * (20 - depth) };
+	}
+
+	let moves = [];
+
+	let possibleMoves = game.grid.reduce((acc, val, index) => {
+		if (val !== "X" && val !== "O") acc.push(index);
+		return acc;
+	}, []);
+
+	let mark = game.getCurrentPlayer().currentPlayer.mark;
+
+	for (let i = 0; i < possibleMoves.length; i++) {
+
+		game.doMove(possibleMoves[i], mark);
+		
+		let move = possibleMoves[i];
+
+		let score = -1 * (negamax(game, depth + 1, maxDepth, -color).score);
+		moves.push({ move, score });
+
+		game.undoMove();
+	}
+
+	if (depth === 0) console.log(moves);
+	
+	return moves.reduce((bestScore, currentScore) => {
+		if (currentScore.score > bestScore.score) return currentScore;
+		return bestScore;
+	}, { score: -10000 });
+}
 
 class Game {
 	constructor(grid) {
@@ -124,7 +176,8 @@ class Game {
 	}
 }
 
-// let g = Game.empty().doMove(1, "X").doMove(7, "O").doMove(8, "X").doMove(6, "O").doMove(5, "X").getCurrentPlayer();
-// let bestMove = getBestMove(g, 5);
+let g = Game.empty().doMove(1, "X").doMove(7, "O").doMove(3, "X").doMove(6, "O").doMove(8, "X").getCurrentPlayer();
+g.printGrid();
+let bestMove = getBestMove(g, 9);
 
 export { PLAYERS, TIE, WINNERS, Game };

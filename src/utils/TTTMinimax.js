@@ -22,21 +22,23 @@
 
 function getBestMove(game, maxDepth = 9) {
 
-	const { score, move } = minimax(game, game.getCurrentPlayer().currentPlayer, 0, maxDepth);
+	console.log(game.getCurrentPlayer().currentPlayer.color);
+	const { score, move } = negamax(game, 0, maxDepth, game.getCurrentPlayer().currentPlayer.color);
 	console.log("Total best score and move found: ", { score, move });
 
 	return move;
 }
 
-function minimax(game, maxPlayer, depth, maxDepth) {
+function negamax(game, depth, maxDepth, color) {
 
 	if (game.evaluateWin().end === true || depth > maxDepth) {
+		// 
 		if (game.isTie() || !game.end) return { score: 0 };
-		
-		// Return score from maximizer's perspective
-		if (game.winner === maxPlayer.mark) {
-			return { score: 20 - depth };
-		} else return { score: depth - 20 };
+
+		// Return score from POV player with color of 1 ("X") * color of recursive step
+		let score = game.winner === "X" ? (20 - depth) : (depth - 20);
+		return { score: color * score };
+		// return { score: color * (20 - depth) };
 	}
 
 	let moves = [];
@@ -54,22 +56,16 @@ function minimax(game, maxPlayer, depth, maxDepth) {
 		
 		let move = possibleMoves[i];
 
-		let score = minimax(game, maxPlayer, depth + 1, maxDepth).score;
+		let score = -1 * (negamax(game, depth + 1, maxDepth, -color).score);
 		moves.push({ move, score });
 
 		game.undoMove();
 	}
 
-	if (depth < 2) console.log(moves);
-
-	let getMaximumScore = game.getCurrentPlayer().currentPlayer === maxPlayer;
+	if (depth === 0) console.log(moves);
 	
 	return moves.reduce((bestScore, currentScore) => {
-		if (getMaximumScore) {
-			if (currentScore.score > bestScore.score) return currentScore;
-		} else {
-			if (currentScore.score < bestScore.score) return currentScore;
-		}
+		if (currentScore.score > bestScore.score) return currentScore;
 		return bestScore;
-	}, { score: getMaximumScore ? -10000 : 10000 });
+	}, { score: -10000 });
 }
